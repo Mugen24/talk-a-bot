@@ -8,6 +8,11 @@ const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
 const token = process.env.token.trim('"', "");
 const clientId = process.env.clientId.trim('"', "");
 const guildId = process.env.guildId.trim('"', "");
+
+console.log(token);
+console.log(clientId);
+console.log(guildId);
+
 const { translate } = require("./utils.js");
 
 // Create a new client instance
