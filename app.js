@@ -5,13 +5,10 @@ const path = require("node:path");
 const { REST, Routes } = require('discord.js');
 const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
 //const { token, clientId, guildId} = require('./config.json');
-const token = process.env.token.trim('"', "");
-const clientId = process.env.clientId.trim('"', "");
-const guildId = process.env.guildId.trim('"', "");
+const token = process.env.token.replace(/^"+|"+$/g, '');
+const clientId = process.env.clientId.replace(/^"+|"+$/g, '');
+const guildId = process.env.guildId.replace(/^"+|"+$/g, '');
 
-console.log(token);
-console.log(clientId);
-console.log(guildId);
 
 const { translate } = require("./utils.js");
 
