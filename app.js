@@ -4,7 +4,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { REST, Routes } = require('discord.js');
 const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
-const { token, clientId, guidId} = require('./config.json');
+//const { token, clientId, guidId} = require('./config.json');
+const token = process.env.token;
+const clientId = process.env.clientId;
+const guildId = process.env.guildId;
 const { translate } = require("./utils.js");
 
 // Create a new client instance
@@ -84,7 +87,7 @@ const rest = new REST().setToken(token);
     try {
         console.log(`Loading: ${commands.length} commands`);
         const data = await rest.put(
-                Routes.applicationGuildCommands(clientId, guidId),
+                Routes.applicationGuildCommands(clientId, guildId),
                 {body: commands}
                 )
         console.log(`Successfully reloaded ${data.length} application (/) commands.`);
