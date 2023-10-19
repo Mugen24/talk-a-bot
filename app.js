@@ -4,10 +4,16 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { REST, Routes } = require('discord.js');
 const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
-const { token, clientId, guildId} = require('./config.json');
-//const token = process.env.token;
-//const clientId = process.env.clientId;
-//const guildId = process.env.guildId;
+//const { token, clientId, guildId} = require('./config.json');
+const token = process.env.token;
+const clientId = process.env.clientId;
+const guildId = process.env.guildId;
+console.log("token");
+console.log(token);
+console.log("clientId");
+console.log(clientId);
+console.log("guildId");
+console.log(guildId);
 const { translate } = require("./utils.js");
 
 // Create a new client instance
