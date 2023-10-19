@@ -1,3 +1,7 @@
 #!/bin/bash
 
-token=${aws ssm get-parameters --name talk-a-bot_clientId}
+token=${aws ssm get-parameter --name talk-a-bot_token | jq .Parameter.Value}
+guildId=${aws ssm get-parameter --name talk-a-bot_guidId | jq .Parameter.Value}
+clientId=${aws ssm get-parameter --name talk-a-bot_clientId | jq .Parameter.Value}
+
+echo $token
