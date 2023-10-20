@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, SlashCommandStringOption} = require("discord.js");
-const { translate } = require("../utils");
-//
+const { setExecuteParam } = require("./baseLanguageHandler");
 
 const stringOption = new SlashCommandStringOption()
                   .setName("text")
@@ -12,9 +11,8 @@ module.exports = {
               .setName("en")
               .setDescription("Translate from Japanese to English")
               .addStringOption(stringOption),
-    async execute(interaction){
-        const text = interaction.options.get("text")?.value?.toString();
-        const translation = await(translate("ja", "en", text));
-        await interaction.reply(`Japanese: ${text} \nEnglish: ${translation}`);
+    execute: (baseInteraction) => {
+        const execute = setExecuteParam("ja", "en", (text, translation) => `Japanese: ${text}\nEnglish: ${translation}`)
+        execute(baseInteraction);
     },
 }
