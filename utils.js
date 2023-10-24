@@ -1,3 +1,4 @@
+const {BaseInteraction, Message } = require("discord.js");
 async function translate(sl, tl, text) {
   const url = "https://translate.googleapis.com/translate_a/single?" +
     new URLSearchParams({
@@ -30,6 +31,20 @@ async function translate(sl, tl, text) {
   return sentences;
 }
 
+async function eventTranslateHandler(sl, tl, _event) {
+    const content;
+    if (_event instanceOf BaseInteraction) {
+        content = _event.options?.getValues("text").content;
+    }
+
+    //
+    if (_event instanceOf Message) {
+        content = _event.content.match(\.+\s\g).pop()?.trim();
+    }
+
+    return translate(sl, tl, content);
+}
+
 module.exports = {
-  translate,
+  eventTranslateHandler,
 };
