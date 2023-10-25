@@ -1,0 +1,36 @@
+const fs = require("node:fs");
+const { SlashCommandBuilder } = require("discord.js");
+const { path } = require("ath");
+
+module.exports = {  
+    data: new SlashCommandBuilder()
+            .setName("set-prefix")
+            .setDescription("Modifies message prefix")
+            .addStringOption(option => 
+                     option.setName("text")
+                           .setDescription("One character Prefix")
+                           .setRequired(true)
+                    ),
+
+    execute: async function (interaction) {
+        const prefix = interaction.options.get("text")?.value?.toString();
+
+        if (prefix && prefix.length == 1) {
+            await interaction.deferReply("Updating prefix..");
+            const creds = require("../config.json");
+            creds.specialChar = prefix;
+            console.log(creds);
+            const configPath = path.resolve(__dirname, "../config.json");
+            console.log(configPath);
+            fs.writeFileSync("../config.json", JSON.stringify(creds));
+            console.log("Data has written successfully");
+
+            interaction.client.config["specialChar"] = prefix;
+            interaction.editReply("Prefix set");
+        } else {
+            interaction.reply("Please enter a 1 character prefix");
+        }
+    }
+
+
+}
