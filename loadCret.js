@@ -6,14 +6,15 @@ fs.stat('config.json', function (err, _stat) {
     let clientId;
     let guildId;
     if (err == null){
-        ({ token, clientId, guildId } = require('./config.json'));
+        ({ token, clientId, guildId } = require('./credential.json'));
     } else {
         token = process.env.token.replace(/^"+|"+$/g, '');
         clientId = process.env.clientId.replace(/^"+|"+$/g, '');
         guildId = process.env.guildId.replace(/^"+|"+$/g, '');
     }
-    if (token == undefined) {
-        console.log("Unknowned error");
+
+    if (token === undefined) {
+        console.log("Token is not defined");
         process.exit(0);
     }
 

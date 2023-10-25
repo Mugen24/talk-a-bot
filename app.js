@@ -1,44 +1,46 @@
 "use strict"
-// Require the necessary discord.js classes
+
 const fs = require("node:fs");
 const path = require("node:path");
 const { REST, Routes } = require('discord.js');
 const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
 const { translate, eventTranslateHandlder } = require("./utils.js");
 const languages = require("./languages.js");
-let {SPECIALCHAR, SOURCE, TARGET} = require("config.json");
+let {SPECIAL_CHAR, SOURCE_LANG, TARGET_LANG} = require("./config.json");
+
+console.log(SPECIAL_CHAR);
+console.log(SOURCE_LANG);
+console.log(TARGET_LANG);
 
 function setConfig(key, value) {
     const content = fs.readFileSync("config.json", {flag: 'r'});
-    const json = Json.load(content);
-    if (key in Object.keys(json)) {
-        json.key = value;
+    const json = JSON.parse(content);
+    console.log(key);
+    console.log(value);
+    if (key === "target") {
+        key = "TARGET_LANG";
+    }
+    else if (key === "source") {
+        key === "SOURCE_LANG";
+    }
+
+    if (key in json) {
+        json[key] = value;
     } else {
-        console.log(`Invalid config: value ${key} does not exists`);
+        throw new Error(`Invalid config: value ${key} does not exists`);
     }
 
-    fs.writeFile("config.json", Json.stringify(json));
+    fs.writeFileSync("config.json", JSON.stringify(json));
 
-}
-
-async function handleError(command, args) {
-    try {
-        await command(...args);
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-        } else {
-            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-        }
-    }
 }
 
 
 async function main(token, clientId, guildId) {
         // Create a new client instance
         const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages] });
-        const languageCodes = languageCodes;
+        const languageCodes = Object.keys(languages);
+
+        console.log(languageCodes);
 
         // When the client is ready, run this code (only once)
         // We use 'c' for the event parameter to keep it separate from the already defined 'client'
@@ -48,38 +50,65 @@ async function main(token, clientId, guildId) {
 
         // Log in to Discord with your client's token
         client.login(token);
+        const langCodeOps = languageCodes.map(
+                co => {
+                    return {
+                        "name": co,
+                        "value": co
+                    }
+                }
+            )
+
+        console.log(langCodeOps);
         client.commands = [
             {
                 "name": "source",
                 "description": "Set source language",
-                "stringOption": [
+                "options": [
                     {
                         "name": "text",
-                        "description": "language code"
+                        "type": 3,
+                        "description": "language code",
+                        "required": true,
+                        "choices": langCodeOps,
                     }
                 ]
             }, 
             {
                 "name": "target",
                 "description": "Set target language",
-                "stringOption": [
+                "options": [
                     {
                         "name": "text",
-                        "description": "Language code"
+                        "type": 3,
+                        "description": "Language code",
+                        "required": true,
+                        "choices": langCodeOps,
+
                     }
                 ]
             },
             {
                 "name": "list-languages",
                 "description": "List legal language code",
-                "stringOption": [{
-                    "name": "text",
-                    "decsription": "Language code"
-                }]
             },
+            {
+                "name": "trans",
+                "description": "Tranlsate from target to source",
+                "options": [
+                    {
+                        "name": "text",
+                        "description": "Text to translate",
+                        "type": 3,
+                        "required": true
+                    }
+                ]
+            }
+            
         ]
-        //Register languages manually for explicit invocation
-        client.commands.concat(languageCodes);
+            
+        
+        client.commands = [...client.commands];
 
         const rest = new REST().setToken(token);
         (async () => {
@@ -94,57 +123,84 @@ async function main(token, clientId, guildId) {
             }
          })()
 
-        
 
         client.on(Events.InteractionCreate, async interaction => {
-                let commandName = interaction.commandName;
+                const commandName = interaction.commandName;
                 if (!interaction.isChatInputCommand()) return;
 
-                if (commandName === "target") {
-                    setConfig("target", interaction);
-                    TARGET = interaction.options?.getValue("text").content;
+                else if (commandName === "target") {
+                    TARGET_LANG = interaction.options?.getString("text");
+                    try {
+                        setConfig("target", TARGET_LANG);
+                        interaction.reply("Updated target sucessfully");
+                    } catch(error) {
+                        interaction.reply(error.toString());
+                    } 
+
                     return;
                 }
 
-                if (commandName === "source") {
-                    setConfig("source", interaction);
-                    TARGET = interaction.options?.getValue("text").content;
+                else if (commandName === "source") {
+                    SOURCE_LANG = interaction.options?.getString("text");
+                    try {
+                        setConfig("source", SOURCE_LANG);
+                        interaction.reply("Updated source sucessfully");
+                    } catch(error) {
+                        interaction.reply(error.toString());
+                    } 
                     return;
                 }
 
 
-                if (!TARGET || !SOURCE) {
-                    interaction.reply("Please specify a /source and a /target. Run /list-languages to find more language");
-                    return;
+                else if (commandName === "trans") {
+                    if (!TARGET_LANG || !SOURCE_LANG) {
+                        interaction.reply("Please specify a /source and a /target. Run /list-languages to find more language");
+                        return;
+                    } else {
+                        const content = interaction.options.getString("text");
+                        if (content) {
+                            const data = await translate(SOURCE_LANG, TARGET_LANG, content);
+                            interaction.reply(data);
+                        } else {
+                            interaction.reply("Nothing to translate xsxd");
+                        }
+
+
+                    }
+
                 }
 
-                if (commandName === "list-languages") {
-                    interaction.reply(languageCodes);
+                else if (commandName === "list-languages") {
+                    interaction.reply(
+                            {content: `${languageCodes.reduce((a,b) => a.concat(` ${b}`))}`,
+                             ephemeral: true,
+                            }
+                    );
                 }
 
-                //Manually invoke translation into target language
-                if (commandName in languageCodes) {
-                    const translatedText = await handleError(eventLanguageHandler, commandName, TARGET, interaction);
-                    interaction.reply(translatedText);
-
-                } else {
-                    interaction.reply(`Please enter the following languages only${[... languageCodes]}`);
-                    return;
-                }
 
         });
 
 
         client.on(Events.MessageCreate, async message => {
+                if (message.isChatInputCommand) return;
+                if (message.author.bot) return;
                 const content = message.content;
-                const regexOb = new RegExp(`^${SPECIAL_CHAR}\\w+`, 'g');
-                const commandTrigger = content.match(regexOb)?.pop();
+                const regexOb = new RegExp(`(^${SPECIAL_CHAR})([\\w\\s]+)`);
+                const commandComponent = content.match(regexOb);
+                console.log(SPECIAL_CHAR);
                 console.log(content);
-                console.log(commandTrigger);
+                console.log(commandComponent || "Null");
 
-                if (command_trigger === undefined) return;
-                const translatedText = await handleError(eventTranslateHandlder, SOURCE, TARGET, message);
-                message.reply(translateText);
+                if (commandComponent[1] === undefined) return;
+                    if (commandComponent[2] !== undefined) {
+                        const data = await translate(SOURCE_LANG, TARGET_LANG, commandComponent[2]);
+                        if (data) {
+                            message.reply(data);
+                        } else {
+                            message.reply("pep pop language undefined system down Zzz");
+                        }
+                    }
         })
 
 
