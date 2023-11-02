@@ -5,7 +5,7 @@ const { REST, Routes } = require('discord.js');
 const { Client, Events, GatewayIntentBits } = require('discord.js');
 const { translate } = require("./utils.js");
 const languages = require("./languages.js");
-let { SPECIAL_CHAR, SOURCE_LANG, TARGET_LANG } = require("./config.json");
+let { SPECIAL_CHAR, SOURCE_LANG, TARGET_LANG , MODE } = require("./config.json");
 
 console.info("SPECIAL_CHAR:", SPECIAL_CHAR);
 console.info("SOURCE_LANG:", SOURCE_LANG);
@@ -93,7 +93,7 @@ function main(token, clientId, guildId) {
             },
             {
                 "name": "trans",
-                "description": "Tranlsate from target to source",
+                "description": "Translate from target to source",
                 "options": [
                     {
                         "name": "text",
@@ -102,8 +102,29 @@ function main(token, clientId, guildId) {
                         "required": true
                     }
                 ]
-            }
-            
+            },
+            {
+                "name": "mode",
+                "description": "Setting translate mode [command | live]. DEFAULT = command",
+                "options": [
+                    {
+                        "name": "text",
+                        "description": "mode",
+                        "type": 3,
+                        "required": true,
+                        "choices": [
+                            {
+                                "name": "Command",
+                                "value": "command"
+                            },
+                            {
+                                "name": "Live",
+                                "value": "live"
+                            },
+                        ]
+                    }
+                ]
+            },
         ]
             
         
@@ -177,6 +198,13 @@ function main(token, clientId, guildId) {
                     );
                 }
 
+                else if (commandName === "mode") {
+                    const option = interaction.options.getString("text");
+                    setConfig("MODE", option);
+                    interaction.reply("Mode updated sucessfully");
+                    MODE = option;
+                }
+
 
         });
 
@@ -184,16 +212,25 @@ function main(token, clientId, guildId) {
         client.on(Events.MessageCreate, async message => {
                 if (message.isChatInputCommand) return;
                 if (message.author.bot) return;
+
+                if (MODE === "live") {
+                    const translated = await translate(SOURCE_LANG, TARGET_LANG, message.content);
+                    message.reply(translated);
+                    return;
+                }
+
                 const content = message.content;
                 const regexOb = new RegExp(`(^${SPECIAL_CHAR})(\\w+\\s)([\\w\\s]+)`);
                 const commandComponent = content.match(regexOb);
-                console.log(SPECIAL_CHAR);
-                console.log(content);
-                console.log(commandComponent || "Null");
+                if (!commandComponent || commandComponent.length !== 4) return;
 
                 const _special_char = commandComponent[1];
                 let _langCode = commandComponent[2].trim();
                 const _msg = commandComponent[3];
+
+                console.log(_special_char);
+                console.log(_langCode);
+                console.log(_msg);
 
                 if (_special_char === undefined) return;
                 if (_langCode === undefined) return;
