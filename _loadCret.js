@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const { main }= require("./app.js");
 
-fs.stat('config.json', function (err, _stat) {
+fs.stat('credential.json', function (err, _stat) {
     let token;
     let clientId;
     let guildId;
