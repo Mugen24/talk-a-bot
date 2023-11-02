@@ -21,7 +21,7 @@ function setConfig(key, value) {
         key = "TARGET_LANG";
     }
     else if (key === "source") {
-        key === "SOURCE_LANG";
+        key = "SOURCE_LANG";
     }
 
     if (key in json) {
