@@ -24,6 +24,7 @@ async function translate(sl, tl, text) {
     );
   }
   let { sentences } = await res.json();
+  console.log("From:", sl, "To", tl, sentences);
   sentences = sentences.map((sen) => sen?.trans)
     .filter(Boolean)
     .join("");

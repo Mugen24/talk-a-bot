@@ -185,21 +185,36 @@ function main(token, clientId, guildId) {
                 if (message.isChatInputCommand) return;
                 if (message.author.bot) return;
                 const content = message.content;
-                const regexOb = new RegExp(`(^${SPECIAL_CHAR})([\\w\\s]+)`);
+                const regexOb = new RegExp(`(^${SPECIAL_CHAR})(\\w+\\s)([\\w\\s]+)`);
                 const commandComponent = content.match(regexOb);
                 console.log(SPECIAL_CHAR);
                 console.log(content);
                 console.log(commandComponent || "Null");
 
-                if (commandComponent[1] === undefined) return;
-                    if (commandComponent[2] !== undefined) {
-                        const data = await translate(SOURCE_LANG, TARGET_LANG, commandComponent[2]);
-                        if (data) {
-                            message.reply(data);
-                        } else {
-                            message.reply("pep pop language undefined system down Zzz");
-                        }
-                    }
+                const _special_char = commandComponent[1];
+                let _langCode = commandComponent[2].trim();
+                const _msg = commandComponent[3];
+
+                if (_special_char === undefined) return;
+                if (_langCode === undefined) return;
+                if (_msg === undefined) return;
+
+                if (_langCode == "jp") {
+                    _langCode = "ja";
+                }
+
+                if (!(languageCodes.indexOf(_langCode) >= 0)) {
+                    message.reply("Invalid language code. /list-languages for more");
+                    return;
+                }
+
+
+                const data = await translate("auto", _langCode, _msg);
+                if (data) {
+                    message.reply(data);
+                } else {
+                    message.reply("pep pop language undefined system down Zzz");
+                }
         })
 };
 
