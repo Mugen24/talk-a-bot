@@ -1,22 +1,22 @@
 "use strict"
 
 const fs = require("node:fs");
-const path = require("node:path");
 const { REST, Routes } = require('discord.js');
-const { Client, Events, Collection, GatewayIntentBits } = require('discord.js');
-const { translate, eventTranslateHandlder } = require("./utils.js");
+const { Client, Events, GatewayIntentBits } = require('discord.js');
+const { translate } = require("./utils.js");
 const languages = require("./languages.js");
-let {SPECIAL_CHAR, SOURCE_LANG, TARGET_LANG} = require("./config.json");
+let { SPECIAL_CHAR, SOURCE_LANG, TARGET_LANG } = require("./config.json");
 
-console.log(SPECIAL_CHAR);
-console.log(SOURCE_LANG);
-console.log(TARGET_LANG);
+console.info("SPECIAL_CHAR:", SPECIAL_CHAR);
+console.info("SOURCE_LANG:", SOURCE_LANG);
+console.info("TARGET_LANG:", TARGET_LANG);
 
 function setConfig(key, value) {
     const content = fs.readFileSync("config.json", {flag: 'r'});
     const json = JSON.parse(content);
-    console.log(key);
-    console.log(value);
+    console.info("Setting:", key);
+    console.info("Value:", value);
+
     if (key === "target") {
         key = "TARGET_LANG";
     }
@@ -29,18 +29,15 @@ function setConfig(key, value) {
     } else {
         throw new Error(`Invalid config: value ${key} does not exists`);
     }
-
     fs.writeFileSync("config.json", JSON.stringify(json));
-
 }
 
 
-async function main(token, clientId, guildId) {
+function main(token, clientId, guildId) {
         // Create a new client instance
         const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages] });
         const languageCodes = Object.keys(languages);
-
-        console.log(languageCodes);
+        console.debug(languageCodes);
 
         // When the client is ready, run this code (only once)
         // We use 'c' for the event parameter to keep it separate from the already defined 'client'
@@ -50,6 +47,8 @@ async function main(token, clientId, guildId) {
 
         // Log in to Discord with your client's token
         client.login(token);
+
+
         const langCodeOps = languageCodes.map(
                 co => {
                     return {
@@ -59,7 +58,7 @@ async function main(token, clientId, guildId) {
                 }
             )
 
-        console.log(langCodeOps);
+        console.debug(langCodeOps);
         client.commands = [
             {
                 "name": "source",
@@ -202,9 +201,6 @@ async function main(token, clientId, guildId) {
                         }
                     }
         })
-
-
-
 };
 
 
